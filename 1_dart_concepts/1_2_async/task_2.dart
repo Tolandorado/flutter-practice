@@ -18,12 +18,10 @@ class Server {
         _controller?.add(timer.tick);
       });
 
-      // Oops, a crash happened...
       await Future.delayed(
         Duration(milliseconds: (1000 + (5000 * random.nextDouble())).round()),
       );
 
-      // Kill the [StreamController], simulating a network loss.
       _controller?.addError(DisconnectedException());
       _controller?.close();
       _controller = null;
@@ -31,7 +29,6 @@ class Server {
       _timer?.cancel();
       _timer = null;
 
-      // Waiting for server to recover...
       await Future.delayed(
         Duration(milliseconds: (1000 + (5000 * random.nextDouble())).round()),
       );
@@ -51,10 +48,61 @@ class Server {
 
 class DisconnectedException implements Exception {}
 
+Future<T> retry<T>(
+  Future<T> Function() computation, {
+  required bool Function(Exception e) retryIf,
+  Duration maxDelay = const Duration(seconds: 30),
+  double backoffFactor = 1.5,
+}) async {
+  var delay = Duration(seconds: 1);
+  while (true) {
+    try {
+      return await computation();
+    } on Exception catch (e) {
+      if (!retryIf(e)) {
+        rethrow;
+      }
+      print('Operation failed. Retrying in ${delay.inSeconds}s...');
+      await Future.delayed(delay);
+      delay = Duration(
+        milliseconds: (delay.inMilliseconds * backoffFactor).round(),
+      );
+      if (delay > maxDelay) {
+        delay = maxDelay;
+      }
+    }
+  }
+}
+
 class Client {
   Future<void> connect(Server server) async {
     // TODO: Implement backoff re-connecting.
     //       Data from the [server] should be printed to the console.
+    await retry(() async {
+      print('Attempting to connect...');
+      final stream = await server.connect();
+      print('Connection successful. Listening for data...');
+      final completer = Completer<void>();
+      final subscription = stream.listen(
+        (data) {
+          print('Received: $data');
+        },
+        onError: (error) {
+          print('Stream error: $error');
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
+        },
+        onDone: () {
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
+        },
+      );
+      await completer.future;
+      await subscription.cancel();
+      throw DisconnectedException();
+    }, retryIf: (e) => e is DisconnectedException);
   }
 }
 

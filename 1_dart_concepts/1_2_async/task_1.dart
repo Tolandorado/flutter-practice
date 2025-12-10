@@ -1,3 +1,21 @@
+import 'dart:async';
+
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  void run(void Function() action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void dispose() {
+    _timer?.cancel();
+  }
+}
+
 /// Collection of [messages] allowed to be [read].
 class Chat {
   Chat(this.onRead);
@@ -7,6 +25,7 @@ class Chat {
   ///
   /// Intended to be a backend mutation.
   final void Function(int message) onRead;
+  final Debouncer _debouncer = Debouncer(milliseconds: 1000);
 
   /// [List] of messages in this [Chat].
   final List<int> messages = List.generate(30, (i) => i);
@@ -14,8 +33,11 @@ class Chat {
   /// Marks this [Chat] as read until the specified [message].
   void read(int message) {
     // TODO: [onRead] should be invoked no more than 1 time in a second.
+    _debouncer.run(() => onRead(message));
+  }
 
-    onRead(message);
+  void dispose() {
+    _debouncer.dispose();
   }
 }
 
@@ -55,4 +77,6 @@ Future<void> main() async {
   await Future.delayed(Duration(milliseconds: 800));
 
   chat.read(40);
+  chat.dispose();
+  chat._debouncer;
 }
