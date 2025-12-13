@@ -1,35 +1,113 @@
-class User {
-  const User({
-    required this.id,
-    this.name,
-    this.bio,
-  });
+/// Value object for a user's unique identifier.
+///
+/// Ensures the underlying string is a valid UUIDv4 and exactly 36 characters
+/// long. Construction throws a [FormatException] if the invariant is violated.
+class UserId {
+  UserId(this.val) {
+    if (val.length != 36) {
+      throw const FormatException('Must be 36 characters long');
+    }
+    if (!RegExp(r'^[0-9a-fA-F-]+$').hasMatch(val)) {
+      throw const FormatException('Must be in UUIDv4 format');
+    }
+  }
 
-  /// TODO: ID should be always 36 characters long and be in [UUIDv4] format.
+  /// Raw string value of the identifier.
   ///
-  /// [UUIDv4]: https://en.wikipedia.org/wiki/Universally_unique_identifier
-  final String id;
-
-  /// TODO: Name should be always 4 - 32 characters long, contain only
-  ///       alphabetical letters.
-  final String? name;
-
-  /// TODO: Biography must be no longer than 255 characters.
-  final String? bio;
+  /// Guaranteed to be a valid UUIDv4 and 36 characters long.
+  final String val;
 }
 
+/// Value object for a user's display name.
+///
+/// Ensures the underlying string is 4–32 characters long and contains only
+/// alphabetical letters (ASCII). Construction throws a [FormatException]
+/// if validation fails.
+class Name {
+  Name(this.val) {
+    if (val.length < 4 || val.length > 32) {
+      throw const FormatException('Must be 4 - 32 characters long');
+    }
+    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(val)) {
+      throw const FormatException('Must contain only alphabetical letters');
+    }
+  }
+
+  /// Raw string value of the name.
+  ///
+  /// Guaranteed to contain only letters and be 4–32 characters long.
+  final String val;
+}
+
+/// Value object for a user's biography.
+///
+/// Ensures the underlying string is no longer than 255 characters.
+/// Construction throws a [FormatException] if the invariant is violated.
+class Bio {
+  Bio(this.val) {
+    if (val.length > 255) {
+      throw const FormatException('Must be no longer than 255 characters');
+    }
+  }
+
+  /// Raw string value of the biography.
+  ///
+  /// Guaranteed to be at most 255 characters long.
+  final String val;
+}
+
+/// Immutable aggregate representing a user profile.
+///
+/// Combines a required identifier with optional name and biography. Field
+/// invariants are enforced by their respective value objects.
+class User {
+  const User({required this.id, this.name, this.bio});
+
+  /// Unique user identifier.
+  ///
+  /// Must be a valid [UUIDv4] string of length 36.
+  final UserId id;
+
+  /// Optional display name.
+  ///
+  /// When present, contains only letters and is 4–32 characters long.
+  final Name? name;
+
+  /// Optional short biography.
+  ///
+  /// When present, is no longer than 255 characters.
+  final Bio? bio;
+}
+
+/// Minimal backend facade for user persistence.
+///
+/// In a real application, this would perform I/O (HTTP, database, etc.).
 class Backend {
-  getUser(String id) async => User(id: id);
-  putUser(String id, {String? name, String? bio}) async {}
+  /// Fetches the [User] with the given [id].
+  ///
+  /// Returns a [Future] that completes with the user data.
+  Future<User> getUser(UserId id) async => User(id: id);
+
+  /// Updates the user with the given [id].
+  ///
+  /// Returns a [Future] that completes when the update finishes.
+  Future<void> putUser(UserId id, {Name? name, Bio? bio}) async {}
 }
 
+/// Application service that orchestrates user operations.
 class UserService {
+  /// Creates a service with the given [backend].
   UserService(this.backend);
 
-  final backend;
+  /// Backend adapter used for persistence.
+  final Backend backend;
 
-  get(String id) async {}
-  update(User user) async {}
+  /// Retrieves a user by [id].
+  Future<User> get(UserId id) async => backend.getUser(id);
+
+  /// Persists updates to [user].
+  Future<void> update(User user) async =>
+      backend.putUser(user.id, name: user.name, bio: user.bio);
 }
 
 void main() {
