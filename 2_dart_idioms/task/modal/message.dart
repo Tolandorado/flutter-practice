@@ -16,12 +16,12 @@ class Message {
   final MessageId id;
   final BoardId boardId;
   final Content content;
-  final AuthorName authorName;
+  final AuthorName? authorName;
 
   Message({
     required this.id,
     required this.boardId,
     required this.content,
-    required this.authorName,
+    this.authorName,
   });
 }
