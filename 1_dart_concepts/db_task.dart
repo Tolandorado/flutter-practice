@@ -53,7 +53,7 @@ void main() async {
   final db = Database<String, int>({});
 
   db.changes.listen((event) {
-    print('DB EVENT: ${event.type.name} ${event.key} ${event.value}');
+    print('DB event: ${event.type.name} ${event.key} ${event.value}');
   });
 
   await db.add('counter', 1);

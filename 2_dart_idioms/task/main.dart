@@ -1,9 +1,11 @@
-import 'modal/board.dart';
-import 'modal/message.dart';
 import 'repositories/board_repository.dart';
 import 'repositories/message_repository.dart';
 import 'modal/content.dart';
 import 'modal/author_name.dart';
+import 'entities/message.dart';
+import 'entities/board.dart';
+import 'modal/board.type.dart';
+import 'modal/message.type.dart';
 
 void main() async {
   final boardsRepo = InMemoryBoardsRepository();

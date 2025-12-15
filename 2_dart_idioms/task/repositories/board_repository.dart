@@ -1,4 +1,5 @@
-import '../modal/board.dart';
+import '../modal/board.type.dart';
+import '../entities/board.dart';
 
 abstract class BoardsRepository {
   Future<void> create(Board board);

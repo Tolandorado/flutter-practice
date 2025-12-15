@@ -1,5 +1,5 @@
-import '../modal/message.dart';
-import '../modal/board.dart';
+import '../modal/board.type.dart';
+import '../entities/message.dart';
 
 abstract class MessagesRepository {
   Future<void> create(Message message);

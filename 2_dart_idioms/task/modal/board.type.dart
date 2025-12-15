@@ -9,9 +9,3 @@ class BoardId with StringIdentity {
   String get value => _value;
 }
 
-class Board {
-  final BoardId id;
-  final String title;
-
-  Board({required this.id, required this.title});
-}
