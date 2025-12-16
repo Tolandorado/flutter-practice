@@ -2,11 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:toml/toml.dart';
-import 'package:json2yaml/json2yaml.dart';
+import 'package:yaml_writer/yaml_writer.dart';
 
 part 'task.g.dart';
 
-// Конвертер для Duration
 class DurationConverter implements JsonConverter<Duration, String> {
   const DurationConverter();
 
@@ -50,6 +49,7 @@ class Request {
 
   factory Request.fromJson(Map<String, dynamic> json) =>
       _$RequestFromJson(json);
+      
   Map<String, dynamic> toJson() => _$RequestToJson(this);
 }
 
@@ -127,6 +127,7 @@ class Gift {
   });
 
   factory Gift.fromJson(Map<String, dynamic> json) => _$GiftFromJson(json);
+
   Map<String, dynamic> toJson() => _$GiftToJson(this);
 }
 
@@ -161,9 +162,9 @@ void main() {
   final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
   final request = Request.fromJson(jsonMap);
 
-
   final requestMap = request.toJson();
-  final yamlString = json2yaml(requestMap);
+  final yaml = YamlWriter();
+  final yamlString = yaml.write(request);
   final tomlString = TomlDocument.fromMap(requestMap);
 
   print('--- YAML ---');
