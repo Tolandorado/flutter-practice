@@ -1,0 +1,10 @@
+
+builders:
+  code_line_summary_builder:
+    import: "package:task_1/task_1.dart"
+    builder_factories: ["summaryBuilder"]
+    build_extensions: {"$package$": ["/summary.g"]}
+    # Для теста результата таски в самом пакете - root_package, иначе dependents
+    auto_apply: root_package
+    # auto_apply: dependents
+    build_to: source
