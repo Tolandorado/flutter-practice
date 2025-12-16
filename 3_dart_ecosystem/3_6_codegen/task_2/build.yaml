@@ -1,0 +1,11 @@
+
+
+builders:
+  task_2|json_serializable:
+    import: "package:task_2/src/builder.dart"
+    builder_factories: ["jsonSerializableBuilder"]
+    build_extensions: {".dart": [".test.g.dart"]}
+    # Для теста результата таски в самом пакете - root_package, иначе dependents
+    auto_apply: root_package 
+    # auto_apply: dependents 
+    build_to: source
