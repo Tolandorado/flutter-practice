@@ -1,8 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:toml/toml.dart';
-import 'package:yaml_writer/yaml_writer.dart';
+// import 'package:toml/toml.dart';
+// import 'package:yaml_writer/yaml_writer.dart';
 
 part 'task.g.dart';
 
@@ -49,8 +49,56 @@ class Request {
 
   factory Request.fromJson(Map<String, dynamic> json) =>
       _$RequestFromJson(json);
-      
+
   Map<String, dynamic> toJson() => _$RequestToJson(this);
+
+  String toToml() {
+    final StringBuffer toml = StringBuffer();
+    toml.writeln('type = "$type"');
+
+    toml.writeln('[stream]');
+    toml.writeln(
+        stream.toToml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+
+    for (var gift in gifts) {
+      toml.writeln('[[gifts]]');
+      toml.writeln(
+          gift.toToml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+    }
+
+    toml.writeln('[debug]');
+    toml.writeln(
+        debug.toToml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+
+    return toml.toString();
+  }
+
+  String toYaml() {
+    final StringBuffer yaml = StringBuffer();
+    yaml.writeln('type: "$type"');
+
+    yaml.writeln('stream:');
+    yaml.writeln(
+        stream.toYaml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+
+    yaml.writeln('gifts:');
+    for (var gift in gifts) {
+      final giftYaml = gift.toYaml();
+      final lines = giftYaml.split('\n');
+      if (lines.isNotEmpty) {
+        yaml.writeln('  - ${lines.first}');
+        for (var i = 1; i < lines.length; i++) {
+          yaml.writeln('    ${lines[i]}');
+        }
+      }
+    }
+
+    yaml.writeln('debug:');
+    yaml.writeln(
+        debug.toYaml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+
+    return yaml.toString();
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
@@ -74,6 +122,36 @@ class StreamInfo {
   factory StreamInfo.fromJson(Map<String, dynamic> json) =>
       _$StreamInfoFromJson(json);
   Map<String, dynamic> toJson() => _$StreamInfoToJson(this);
+
+  String toToml() {
+    final StringBuffer toml = StringBuffer();
+    toml.writeln('userId = "$userId"');
+    toml.writeln('isPrivate = $isPrivate');
+    toml.writeln('settings = $settings');
+    toml.writeln('shardUrl = "$shardUrl"');
+    toml.writeln('[publicTariff]');
+    toml.writeln(
+        publicTariff.toToml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+    toml.writeln('[privateTariff]');
+    toml.writeln(
+        privateTariff.toToml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+    return toml.toString();
+  }
+
+  String toYaml() {
+    final StringBuffer yaml = StringBuffer();
+    yaml.writeln('userId: "$userId"');
+    yaml.writeln('isPrivate: $isPrivate');
+    yaml.writeln('settings: $settings');
+    yaml.writeln('shardUrl: "$shardUrl"');
+    yaml.writeln('publicTariff:');
+    yaml.writeln(
+        publicTariff.toYaml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+    yaml.writeln('privateTariff:');
+    yaml.writeln(
+        privateTariff.toYaml().replaceAll(RegExp(r'^', multiLine: true), '  '));
+    return yaml.toString();
+  }
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -94,6 +172,18 @@ class PublicTariff {
   factory PublicTariff.fromJson(Map<String, dynamic> json) =>
       _$PublicTariffFromJson(json);
   Map<String, dynamic> toJson() => _$PublicTariffToJson(this);
+
+  String toToml() {
+    final durationConverter = DurationConverter();
+    final durationString = durationConverter.toJson(duration);
+    return 'id = $id\nprice = $price\nduration = "$durationString"\ndescription = "$description"';
+  }
+
+  String toYaml() {
+    final durationConverter = DurationConverter();
+    final durationString = durationConverter.toJson(duration);
+    return 'id: $id\nprice: $price\nduration: "$durationString"\ndescription: "$description"';
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
@@ -112,6 +202,18 @@ class PrivateTariff {
   factory PrivateTariff.fromJson(Map<String, dynamic> json) =>
       _$PrivateTariffFromJson(json);
   Map<String, dynamic> toJson() => _$PrivateTariffToJson(this);
+
+  String toToml() {
+    final DurationConverter durationConverter = DurationConverter();
+    final String durationString = durationConverter.toJson(duration);
+    return 'clientPrice = $clientPrice\nduration = "$durationString"\ndescription = "$description"';
+  }
+
+  String toYaml() {
+    final DurationConverter durationConverter = DurationConverter();
+    final String durationString = durationConverter.toJson(duration);
+    return 'clientPrice: $clientPrice\nduration: "$durationString"\ndescription: "$description"';
+  }
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -129,6 +231,14 @@ class Gift {
   factory Gift.fromJson(Map<String, dynamic> json) => _$GiftFromJson(json);
 
   Map<String, dynamic> toJson() => _$GiftToJson(this);
+
+  String toToml() {
+    return 'id = $id\nprice = $price\ndescription = "$description"';
+  }
+
+  String toYaml() {
+    return 'id: $id\nprice: $price\ndescription: "$description"';
+  }
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -145,6 +255,20 @@ class DebugInfo {
   factory DebugInfo.fromJson(Map<String, dynamic> json) =>
       _$DebugInfoFromJson(json);
   Map<String, dynamic> toJson() => _$DebugInfoToJson(this);
+
+  String toToml() {
+    final DurationConverter durationConverter = DurationConverter();
+    final String durationString = durationConverter.toJson(duration);
+    final String atString = at.toUtc().toIso8601String(); // RFC 3339 format
+    return 'duration = "$durationString"\nat = $atString';
+  }
+
+  String toYaml() {
+    final DurationConverter durationConverter = DurationConverter();
+    final String durationString = durationConverter.toJson(duration);
+    final String atString = at.toUtc().toIso8601String(); // ISO 8601 format
+    return 'duration: "$durationString"\nat: $atString';
+  }
 }
 
 void main() {
@@ -162,10 +286,8 @@ void main() {
   final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
   final request = Request.fromJson(jsonMap);
 
-  final requestMap = request.toJson();
-  final yaml = YamlWriter();
-  final yamlString = yaml.write(request);
-  final tomlString = TomlDocument.fromMap(requestMap);
+  final tomlString = request.toToml();
+  final yamlString = request.toYaml();
 
   print('--- YAML ---');
   print(yamlString);
