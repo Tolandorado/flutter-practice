@@ -9,7 +9,8 @@ class IsolateArguments {
 
   IsolateArguments(this.start, this.end, this.sendPort);
 }
-// Читаемо, но медленее:
+
+// Readabe, but slower:
 //Time taken: ~161
 // bool _isPrime(int n) {
 //   if (n < 2) return false;

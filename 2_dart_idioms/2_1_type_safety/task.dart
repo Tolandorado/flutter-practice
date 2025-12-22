@@ -3,6 +3,11 @@
 /// Ensures the underlying string is a valid UUIDv4 and exactly 36 characters
 /// long. Construction throws a [FormatException] if the invariant is violated.
 class UserId {
+  /// Raw string value of the identifier.
+  ///
+  /// Guaranteed to be a valid UUIDv4 and 36 characters long.
+  final String val;
+
   UserId(this.val) {
     if (val.length != 36) {
       throw const FormatException('Must be 36 characters long');
@@ -11,11 +16,6 @@ class UserId {
       throw const FormatException('Must be in UUIDv4 format');
     }
   }
-
-  /// Raw string value of the identifier.
-  ///
-  /// Guaranteed to be a valid UUIDv4 and 36 characters long.
-  final String val;
 }
 
 /// Value object for a user's display name.
@@ -24,6 +24,11 @@ class UserId {
 /// alphabetical letters (ASCII). Construction throws a [FormatException]
 /// if validation fails.
 class Name {
+  /// Raw string value of the name.
+  ///
+  /// Guaranteed to contain only letters and be 4–32 characters long.
+  final String val;
+
   Name(this.val) {
     if (val.length < 4 || val.length > 32) {
       throw const FormatException('Must be 4 - 32 characters long');
@@ -32,11 +37,6 @@ class Name {
       throw const FormatException('Must contain only alphabetical letters');
     }
   }
-
-  /// Raw string value of the name.
-  ///
-  /// Guaranteed to contain only letters and be 4–32 characters long.
-  final String val;
 }
 
 /// Value object for a user's biography.
@@ -44,16 +44,16 @@ class Name {
 /// Ensures the underlying string is no longer than 255 characters.
 /// Construction throws a [FormatException] if the invariant is violated.
 class Bio {
+  /// Raw string value of the biography.
+  ///
+  /// Guaranteed to be at most 255 characters long.
+  final String val;
+
   Bio(this.val) {
     if (val.length > 255) {
       throw const FormatException('Must be no longer than 255 characters');
     }
   }
-
-  /// Raw string value of the biography.
-  ///
-  /// Guaranteed to be at most 255 characters long.
-  final String val;
 }
 
 /// Immutable aggregate representing a user profile.
@@ -61,8 +61,6 @@ class Bio {
 /// Combines a required identifier with optional name and biography. Field
 /// invariants are enforced by their respective value objects.
 class User {
-  const User({required this.id, this.name, this.bio});
-
   /// Unique user identifier.
   ///
   /// Must be a valid [UUIDv4] string of length 36.
@@ -77,6 +75,8 @@ class User {
   ///
   /// When present, is no longer than 255 characters.
   final Bio? bio;
+
+  const User({required this.id, this.name, this.bio});
 }
 
 /// Minimal backend facade for user persistence.
@@ -96,11 +96,11 @@ class Backend {
 
 /// Application service that orchestrates user operations.
 class UserService {
-  /// Creates a service with the given [backend].
-  UserService(this.backend);
-
   /// Backend adapter used for persistence.
   final Backend backend;
+
+  /// Creates a service with the given [backend].
+  UserService(this.backend);
 
   /// Retrieves a user by [id].
   Future<User> get(UserId id) async => backend.getUser(id);

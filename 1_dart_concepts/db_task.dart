@@ -19,10 +19,10 @@ class Database<K, V> {
 
   Database(this._database);
 
-  //getter of db changes
+  // getter of db changes
   Stream<DBEvent<K, V>> get changes => _controller.stream;
 
-  //method to add new value to db
+  // method to add new value to db
   Future<void> add(K key, V value) async {
     await Future.delayed(_delay);
 
@@ -30,14 +30,14 @@ class Database<K, V> {
     _controller.add(DBEvent(key, value, DBEventType.add));
   }
 
-  //method to get value from db
+  // method to get value from db
   Future<V?> get(K key) async {
     await Future.delayed(_delay);
 
     return _database[key];
   }
 
-  //method to remove value from db
+  // method to remove value from db
   Future<void> remove(K key) async {
     await Future.delayed(_delay);
 
